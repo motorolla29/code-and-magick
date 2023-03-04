@@ -1,7 +1,7 @@
 'use strict';
 
-var setupBlock = document.querySelector('.setup');
-var similarList = setupBlock.querySelector('.setup-similar-list');
+var setupDialogElement = document.querySelector('.setup');
+var similarList = setupDialogElement.querySelector('.setup-similar-list');
 var similarWizardTemplate = document.querySelector('#similar-wizard-template')
 .content.querySelector('.setup-similar-item');
 var setupOpen = document.querySelector('.setup-open');
@@ -33,7 +33,7 @@ var FIRE_BALL_COLORS = ['#ee4830', '#30a8ee', '#5ce6c0',
 
 ///////////////////////////////////////////////
 
-setupBlock.querySelector('.setup-similar').classList.remove('hidden');
+setupDialogElement.querySelector('.setup-similar').classList.remove('hidden');
 
 renderRandomWizardsFragment(4);
 
@@ -84,7 +84,7 @@ function renderRandomWizard() {
 }
 
 function openPopup() {
-    setupBlock.classList.remove('hidden');
+    setupDialogElement.classList.remove('hidden');
     document.addEventListener('keydown', onPopupEscPress);
     setupFireBall.addEventListener('click', onFireballClick);
     setupWizardCoat.addEventListener('click', onWizardCoatClick);
@@ -92,11 +92,13 @@ function openPopup() {
 }
 
 function closePopup() {
-    setupBlock.classList.add('hidden');
+    setupDialogElement.classList.add('hidden');
     document.removeEventListener('keydown', onPopupEscPress);
     setupFireBall.removeEventListener('click', onFireballClick);
     setupWizardCoat.removeEventListener('click', onWizardCoatClick);
     setupWizardEyes.removeEventListener('click', onWizardEyesClick);
+    setupDialogElement.style.top = '80px';
+    setupDialogElement.style.left = '951.5px';
 }
 
 function onPopupEscPress(evt) {
