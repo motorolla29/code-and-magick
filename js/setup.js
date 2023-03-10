@@ -13,37 +13,97 @@ var setupFireBall = document.querySelector('.setup-fireball-wrap');
 var setupWizardCoat = document.querySelector('.wizard-coat');
 var setupWizardEyes = document.querySelector('.wizard-eyes');
 var form = document.querySelector('.setup-wizard-form');
+var setupButton = document.querySelector('.setup-submit');
 
-///////////////////////////////////////////////// Data
+///////////////////////////////////////////////// GET data from server
 
-var WIZARD_NAMES = ['Иван','Хуан Себастьян','Мария', 'Кристоф',
-'Виктор','Юлия','Люпита','Вашингтон'];
+var renderWizard = function (wizard) {
+    var wizardElement = similarWizardTemplate.cloneNode(true);
+    
+    wizardElement.querySelector('.setup-similar-label').textContent = wizard.name;
+    wizardElement.querySelector('.wizard-coat').style.fill = wizard.colorCoat;
+    
+    return wizardElement;
+};
 
-var WIZARD_SURNAMES = ['да Марья', 'Верон', 'Мирабелла', 'Вальц',
-'Онопко', 'Топольницкая', 'Нионго', 'Ирвинг'];
+var successHandler = function (wizards) {
+    var fragment = document.createDocumentFragment();
+    
+    for (var i = 0; i < 4; i++) {
+      fragment.appendChild(renderWizard(wizards[i]));
+    }
 
-var WIZARD_COAT_COLORS = ['rgb(101, 137, 164)', 'rgb(241, 43, 107)',
-'rgb(146, 100, 161)', 'rgb(56, 159, 117)', 'rgb(215, 210, 55)', 'rgb(0, 0, 0)'];
+    similarList.appendChild(fragment);
+    
+    setupDialogElement.querySelector('.setup-similar').classList.remove('hidden');
+};
+  
+var errorHandler = function (errorMessage) {
+    var node = document.createElement('div');
+    node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
+    node.style.position = 'absolute';
+    node.style.left = 0;
+    node.style.right = 0;
+    node.style.fontSize = '30px';
+    
+    node.textContent = errorMessage; 
+    document.body.insertAdjacentElement('afterbegin', node);
 
-var WIZARD_EYES_COLORS = ['black', 'red', 'blue', 'yellow',
-'green'];
+    setTimeout(() => {
+        node.remove();
+    }, 3000);
+};
+  
+window.backend.load(successHandler, errorHandler);
 
-var FIRE_BALL_COLORS = ['#ee4830', '#30a8ee', '#5ce6c0', 
-'#e848d5', '#e6e848'];
+// Form
 
-///////////////////////////////////////////////
+var successFormSendHandler = function() {
+    var node = document.createElement('div');
+    node.style = 'z-index: 100; margin: 0 auto; text-align: center; color: black; background-color: white;';
+    node.style.position = 'absolute';
+    node.style.left = 0;
+    node.style.right = 0;
+    node.style.fontSize = '30px';
 
-setupDialogElement.querySelector('.setup-similar').classList.remove('hidden');
+    node.textContent = 'Форма отправлена!'; 
+    
+    document.body.insertAdjacentElement('afterbegin', node);
 
-renderRandomWizardsFragment(4);
+    setTimeout(() => {
+        node.remove();
+    }, 3000);
+};
 
-// Events
+var errorFormSendHandler = function(errorMessage) {
+    var node = document.createElement('div');
+    node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
+    node.style.position = 'absolute';
+    node.style.left = 0;
+    node.style.right = 0;
+    node.style.fontSize = '30px';
 
-setupOpen.addEventListener('click', (evt) => {
+    node.textContent = errorMessage; 
+    
+    document.body.insertAdjacentElement('afterbegin', node);
+
+    setTimeout(() => {
+        node.remove();
+    }, 3000);
+
+};
+
+setupOpen.addEventListener('click', () => {
     openPopup();
+    setupButton.addEventListener('click', function(evt) {
+        evt.preventDefault();
+        var formToSend = new FormData(form);
+        window.backend.save(formToSend, successFormSendHandler, errorFormSendHandler);
+        closePopup();
+    });
 });
 
-setupClose.addEventListener('click', (evt) => {
+setupClose.addEventListener('click', () => {
     closePopup();
 });
 
@@ -63,40 +123,15 @@ setupClose.addEventListener('keydown', (evt) => {
 function getRandomNumber(maxNumber) {
     return Math.floor(Math.random() * maxNumber++);
 }
- 
- 
-function renderRandomWizard() {
-    var wizardElement = similarWizardTemplate.cloneNode(true);
-    wizardElement.querySelector('.setup-similar-label').textContent = WIZARD_NAMES[getRandomNumber(8)] + ' ' + WIZARD_SURNAMES[getRandomNumber(8)];
-    wizardElement.querySelector('.wizard-coat').style.fill = WIZARD_COAT_COLORS[getRandomNumber(6)];
-    wizardElement.querySelector('.wizard-eyes').style.fill = WIZARD_EYES_COLORS[getRandomNumber(5)];
- 
-    return wizardElement;
-}
-
- function renderRandomWizardsFragment(WizardsQuantity) {
-    var fragment = document.createDocumentFragment();
-    for (var i = 0; i < WizardsQuantity; i++) {
-        fragment.appendChild(renderRandomWizard());
-    }
-
-    similarList.appendChild(fragment);
-}
 
 function openPopup() {
     setupDialogElement.classList.remove('hidden');
     document.addEventListener('keydown', onPopupEscPress);
-    setupFireBall.addEventListener('click', onFireballClick);
-    setupWizardCoat.addEventListener('click', onWizardCoatClick);
-    setupWizardEyes.addEventListener('click', onWizardEyesClick);
 }
 
 function closePopup() {
     setupDialogElement.classList.add('hidden');
     document.removeEventListener('keydown', onPopupEscPress);
-    setupFireBall.removeEventListener('click', onFireballClick);
-    setupWizardCoat.removeEventListener('click', onWizardCoatClick);
-    setupWizardEyes.removeEventListener('click', onWizardEyesClick);
     setupDialogElement.style.top = '80px';
     setupDialogElement.style.left = '951.5px';
 }
@@ -105,27 +140,4 @@ function onPopupEscPress(evt) {
     if (evt.keyCode === ESC_KEYCODE && document.activeElement !== setupUserName) {
         closePopup();
     }
-}
-
-
-
-function onWizardEyesClick() {
-    var eyesColor = WIZARD_EYES_COLORS[getRandomNumber(5)];
-    setupWizardEyes.style.fill = eyesColor;
-    form.querySelector('.setup-player input[name="eyes-color"]').setAttribute('value', eyesColor);
-}
-
- 
-function onWizardCoatClick() {
-    var coatColor = WIZARD_COAT_COLORS[getRandomNumber(6)];
-    setupWizardCoat.style.fill = coatColor;
-    form.querySelector('.setup-player input[name="coat-color"]').setAttribute('value', coatColor);
-
-}
-
-
-function onFireballClick() {
-    var fireballColor = FIRE_BALL_COLORS[getRandomNumber(5)];
-    setupFireBall.style.background = fireballColor;
-    form.querySelector('.setup-fireball-wrap input[name="fireball-color"]').setAttribute('value', fireballColor);
 }
